@@ -1,0 +1,59 @@
+server:
+  port: 80
+  
+  
+spring:
+   application:
+      name: sc-index
+      
+eureka:
+   client:
+      serviceUrl:
+         # 注册服务器的地址
+         defaultZone: http://127.0.0.1:8000/eureka
+         
+         
+# 开启声明式熔断降级开关
+feign:
+   hystrix:
+      enabled: true 
+      
+zuul:
+   # 配置忽略行为,忽略所有的子系统的默认路由
+   ignoredServices: '*'
+   routes:
+      # 定义路由名称,zuul 会默认路由器子系统,格式 zuul服务器地址/服务名/路径
+      
+      #简单路由: 响应重定向(内部 + 外部)
+      test1:
+         path: /baidu/**
+         url: http://www.baidu.com
+         
+       # 跳转路由:请求转发(内部资源)
+       test2: 
+          # /zuser/way ==>/user/way ==>sc-user/user/way 
+          path: /zuser/**
+          url: forward:/user
+          
+       # Ribbon 路由
+       test3:
+          path: /ruser/**
+          serviceId: sc-user
+          #由于zuul 有默认的敏感头设定，所有要忽略默认的敏感头设置，必须将敏感头设置为空
+          sensitiveHeaders:
+       # 以服务器作为路由器名称
+       sc-user:
+          path: /rruser/**     
+       #设置默认路由
+       legacy:
+          path: /**
+          url: http://www.163.com
+          
+       # 去敏感头字段
+       test4:
+       # /suser/user/way ==> /sc-user/user/way
+          path: /suser/**
+          serviceId: sc-user
+          # 不是所有的头域字段都可以过滤
+          sensitiveHeaders: cookie,set-cookie  
+         
